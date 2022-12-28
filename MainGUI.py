@@ -9,22 +9,27 @@ def btnClickFunctionStartRecording():
     global framerate
     global root
     global latestDIR
+    global FrameNameNumber
 
+# Reset Frame Number
+    FrameNameNumber = 0
+
+# Get current directory
     latestDIR = str(getInputBoxValuePrefix())
 
+# Make a new directory
     os.mkdir(latestDIR)
 
+# Allow Looping of screen grabs
     activatecycle = 1
 
-    framerate = int(getInputBoxValueFrameInterval()) * 1000
+# Set framerate from tet box
+    framerate = int(float(getInputBoxValueFrameInterval()) * 1000)
 
-    #root.after(1000, TakeScreenshot)
+# Start looping
     TakeScreenshottest()
-    print(activatecycle)
 
-
-    print(getListboxValuelistBoxOne())
-
+# Check auto off
     for i in getListboxValuelistBoxOne():
         print(i)
         if   i == 0:
@@ -36,8 +41,6 @@ def btnClickFunctionStartRecording():
         elif i == 3:
             root.after( 120 * 60 * 1000, StopRecording)
 
-
-
     print('Started Recording')
 
 
@@ -48,10 +51,14 @@ def btnClickFunctionStopRecording():
 
 def StopRecording():
     global activatecycle
-    activatecycle = 0
+    global LatestFilename
 
-    print(activatecycle)
-    print('Stopped Recording')
+    activatecycle = 0
+    LatestFilename.config(text = "Recording Stopped")
+
+
+    #print(activatecycle)
+    #print('Stopped Recording')
 
 
 # this is a function to check the status of the checkbox (1 means checked, and 0 means unchecked)
@@ -82,26 +89,20 @@ root = Tk()
 #this is the declaration of the variable associated with the checkbox
 AutoOff = tk.IntVar()
 
-
-
 # This is the section of code which creates the main window
 root.geometry('300x500')
 root.configure(background='#FFFFFF')
 root.title('Screen Recorder')
 
-
 # This is the section of code which creates a button
 Button(root, text='Stop Recording', bg='#FF4040', font=('arial', 12, 'normal'), command=btnClickFunctionStopRecording).place(x=10, y=306)
-
 
 # This is the section of code which creates a button
 Button(root, text='Start Recording', bg='#7FFFD4', font=('arial', 12, 'normal'), command=btnClickFunctionStartRecording).place(x=10, y=271)
 
-
 # This is the section of code which creates a checkbox
 CheckBoxOne=Checkbutton(root, text='Auto Off After:', variable=AutoOff, bg='#FFE4C4', font=('arial', 12, 'normal'))
 CheckBoxOne.place(x=10, y=134)
-
 
 # This is the section of code which creates a listbox
 listBoxOne=Listbox(root, bg='#FFE4C4', font=('arial', 12, 'normal'), width=0, height=0)
@@ -111,7 +112,6 @@ listBoxOne.insert('2', '60 Minutes')
 listBoxOne.insert('3', '120 Minutes')
 listBoxOne.place(x=10, y=169)
 
-
 # First, we create a canvas to put the picture on
 LatestCapture = Canvas(root, height=100, width=100)
 # Then, we actually create the image file to use (it has to be a *.gif)
@@ -120,16 +120,12 @@ picture_file = PhotoImage(file = '')  # <-- you will have to copy-paste the file
 LatestCapture.create_image(100, 0, anchor=NE, image=picture_file)
 LatestCapture.place(x=150, y=82)
 
-
 # This is the section of code which creates the a label
 Label(root, text='File Name Prefix', bg='#FFFFFF', font=('arial', 12, 'normal')).place(x=10, y=86)
-
 
 # This is the section of code which creates the a label
 LatestFilename = Label(root, text='Latest Filename', bg='#FFFFFF', font=('arial', 12, 'normal'))
 LatestFilename.place(x=10, y=345)
-
-
 
 # This is the section of code which creates a text input box
 Prefix=Entry(root)
@@ -153,7 +149,9 @@ worthAThousandWords.place(x=10, y=374)
 import mss
 import time
 
+# Setup variables
 activatecycle = 1
+FrameNameNumber = 0
 framerate = 1000
 latest_filename = ""
 latestDIR = ""
@@ -164,41 +162,44 @@ def TakeScreenshot():
     global latest_filename
     global latestDIR
     global currentDIR
+    global FrameNameNumber
 
-    print("Taken Screenshot")
+
 
     with mss.mss() as sct:
-        # Get epoch time now and round to 2 decimal places.
-        t_epoch = round(time.time(), 2)
-        # print(round(t_epoch, 2))
 
         # Save the screenshot of both monitors
-        latest_filename = '{}.png'.format(t_epoch)
-        print(latest_filename)
-        #latest_filename = '/{}/{}.png'.format(latestDIR, t_epoch)
-        print("got latest_filename")
+        latest_filename = '{}.png'.format(FrameNameNumber)
 
-        filename = sct.shot(mon=-1, output='{}\{}.png'.format(currentDIR + latestDIR, t_epoch))
-        print("got filename = ")
+        # Increment number for file naming
+        FrameNameNumber += 1
 
-    # print(filename)
-        print('Taken ScreenShot {}'.format(latest_filename))
+        # Debug Info
+        # print(latest_filename)
 
+        # Save screenshot to selected folder
+        filename = sct.shot(mon=-1, output='{}\{}.png'.format(currentDIR + latestDIR, FrameNameNumber))
+
+        # Debug Info
+        #print('Taken ScreenShot {}'.format(latest_filename))
+
+        # Update GUI with last filename saved
         LatestFilename.config(text = latest_filename)
 
 
 
-
+# Main looping function
 def TakeScreenshottest():
     global latest_filename
     global LatestCapture
 
     print(latest_filename)
 
+# while cycle activated, take screenshots
     if activatecycle:
         TakeScreenshot()
         #LatestCapture.PhotoImage = PhotoImage(file=latest_filename)
-        print("testing")
+
         root.after(framerate, TakeScreenshottest)
 
 #root.after(1000, TakeScreenshot)
